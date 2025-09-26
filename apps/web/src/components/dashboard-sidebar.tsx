@@ -34,7 +34,7 @@ export function DashboardSidebar() {
   const { user, logout} = useAuth();
 
   return (
-    <aside className="w-64 border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <aside className="w-64 border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex flex-col h-full">
       <div className="flex items-center gap-6 p-4">
         <Link href="/dashboard" className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
@@ -46,7 +46,7 @@ export function DashboardSidebar() {
           <ThemeToggle />
         </div>
       </div>
-      <nav className="flex flex-col h-full p-4">
+      <nav className="flex flex-col flex-1 p-4">
         <div className="space-y-1">
           {navigationItems.map((item) => {
             const isActive =
@@ -69,7 +69,7 @@ export function DashboardSidebar() {
             );
           })}
         </div>
-        <div className="flex items-center gap-4 mt-10">
+        <div className="flex items-center gap-4 mt-auto">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
@@ -86,7 +86,7 @@ export function DashboardSidebar() {
               </Button>
             </DropdownMenuTrigger>
 
-            <DropdownMenuContent className="w-56" align="end" forceMount>
+            <DropdownMenuContent className="w-56" align="start" side="bottom" forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium leading-none">{user?.name}</p>
