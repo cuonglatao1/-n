@@ -1,6 +1,17 @@
 import { Node, Edge } from 'reactflow';
 import { LLMModel } from './llm.types';
 
+export interface TextNodeData {
+  id: string;
+  text: string;
+  isEditing?: boolean;
+}
+
+export interface TextNode extends Node {
+  type: 'textNode';
+  data: TextNodeData;
+}
+
 export interface PromptNodeData {
   id: string;
   prompt: string;
@@ -21,12 +32,14 @@ export interface PromptNode extends Node {
   data: PromptNodeData;
 }
 
+export type FlowNode = TextNode | PromptNode;
+
 export interface Flow {
   id: string;
   userId: string;
   name: string;
   description?: string;
-  nodes: PromptNode[];
+  nodes: FlowNode[];
   edges: Edge[];
   createdAt: Date;
   updatedAt: Date;
@@ -41,7 +54,7 @@ export interface UpdateFlowRequest {
   id: string;
   name?: string;
   description?: string;
-  nodes?: PromptNode[];
+  nodes?: FlowNode[];
   edges?: Edge[];
 }
 

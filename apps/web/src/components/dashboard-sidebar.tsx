@@ -4,9 +4,16 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { BarChart3, Workflow, Settings, LogOut } from 'lucide-react';
+import { BarChart3, Workflow, Settings, LogOut, MessageSquare, History } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from './ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { ThemeToggle } from './theme-toggle';
 import { useAuth } from '@/hooks/use-auth';
@@ -18,9 +25,9 @@ const navigationItems = [
     icon: BarChart3,
   },
   {
-    name: 'Conversations',
-    href: '/dashboard/workflows',
-    icon: Workflow,
+    name: 'History',
+    href: '/dashboard/history',
+    icon: History,
   },
   {
     name: 'Settings',

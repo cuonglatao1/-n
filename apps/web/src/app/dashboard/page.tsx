@@ -2,45 +2,13 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  Plus,
-  Play,
-  Clock,
-  TrendingUp,
-  Zap,
-  AlertCircle,
-  CheckCircle2,
-  XCircle,
-  Settings,
-} from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
+import { MessageSquare, Zap, Bot, ArrowRight } from 'lucide-react';
 
 export default function DashboardPage() {
   const { user } = useAuth();
-
-  // Mock data - in real app this would come from your API
-  const stats = {
-    totalExecutions: 0,
-    failedExecutions: 0,
-    failureRate: 0,
-    timeSaved: 0,
-    avgRunTime: 0,
-  };
-
-  const workflows = [
-    {
-      id: '1',
-      name: 'My workflow',
-      lastUpdated: '3 months ago',
-      created: '3 June',
-      status: 'inactive' as const,
-      isPersonal: true,
-    },
-  ];
 
   return (
     <div className="flex flex-col h-full">
@@ -49,223 +17,104 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold">Overview</h1>
-            <p className="text-muted-foreground">
-              All the conversation, credentials and executions you have access to
-            </p>
+            <p className="text-muted-foreground">Welcome to your AI workspace, {user?.name}</p>
           </div>
-          <Button asChild>
-            <Link href="/dashboard/workflows/new">
-              <Plus className="h-4 w-4 mr-2" />
-              Create Conversation
-            </Link>
-          </Button>
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">36</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalExecutions}</div>
-              <p className="text-xs text-muted-foreground">Last 7 days</p>
-            </CardContent>
+      {/* Main Content */}
+      <div className="flex-1 p-6">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {/* Chat Flow Card */}
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
+            <Link href="/dashboard/chat?new=true">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+                    <MessageSquare className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg">AI Chat Flow</CardTitle>
+                    <CardDescription>Interactive streaming chat interface</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <p className="text-sm text-muted-foreground">
+                    Experience real-time AI conversations with visual flow connections and smooth
+                    animations.
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <Zap className="h-3 w-3" />
+                        <span>Real-time</span>
+                      </div>
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <Bot className="h-3 w-3" />
+                        <span>Multi-model</span>
+                      </div>
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                  </div>
+                </div>
+              </CardContent>
+            </Link>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">36</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.failedExecutions}</div>
-              <p className="text-xs text-muted-foreground">Last 7 days</p>
-            </CardContent>
+          {/* Settings Card */}
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
+            <Link href="/dashboard/settings">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-muted rounded-lg group-hover:bg-muted/80 transition-colors">
+                    <Bot className="h-6 w-6 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg">API Settings</CardTitle>
+                    <CardDescription>Configure your AI model credentials</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <p className="text-sm text-muted-foreground">
+                    Add API keys for OpenAI, Anthropic, and Google to start using AI models.
+                  </p>
+                  <div className="flex items-center justify-end">
+                    <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                  </div>
+                </div>
+              </CardContent>
+            </Link>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">36</CardTitle>
+          {/* Coming Soon Card */}
+          <Card className="opacity-75">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-muted rounded-lg">
+                  <Zap className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg">Workflow Builder</CardTitle>
+                  <CardDescription>Advanced AI workflow automation</CardDescription>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.failureRate}%</div>
-              <p className="text-xs text-muted-foreground">Last 7 days</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">36</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.timeSaved}s</div>
-              <p className="text-xs text-muted-foreground">Last 7 days</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">36 (avg.)</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.avgRunTime}s</div>
-              <p className="text-xs text-muted-foreground">Last 7 days</p>
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  Create complex AI workflows with multiple steps and conditions.
+                </p>
+                <div className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded w-fit">
+                  Coming Soon
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
-
-        {/* Tabs Section */}
-        <Tabs defaultValue="workflows" className="space-y-6">
-          <div className="flex items-center justify-between">
-            <TabsList className="grid w-auto grid-cols-3">
-              <TabsTrigger value="workflows">Conversations</TabsTrigger>
-              <TabsTrigger value="credentials">Credentials</TabsTrigger>
-              <TabsTrigger value="executions">Executions</TabsTrigger>
-            </TabsList>
-
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">Search</span>
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  className="px-3 py-1 text-sm border rounded-md bg-background"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">Sort by last updated</span>
-              </div>
-            </div>
-          </div>
-
-          <TabsContent value="workflows" className="space-y-4">
-            {false ? (
-              <Card>
-                <CardContent className="flex flex-col items-center justify-center py-12">
-                  <div className="text-center space-y-4">
-                    <div className="mx-auto w-12 h-12 bg-muted rounded-full flex items-center justify-center">
-                      <Zap className="h-6 w-6 text-muted-foreground" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-medium">No conversations yet</h3>
-                      <p className="text-muted-foreground">
-                        Create your first conversation to get started with LLM automation
-                      </p>
-                    </div>
-                    <Button asChild>
-                      <Link href="/dashboard/workflows/new">
-                        <Plus className="h-4 w-4 mr-2" />
-                        Create Your First Conversation
-                      </Link>
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-2">
-                {workflows.map((workflow) => (
-                  <Card key={workflow.id} className="hover:bg-muted/50 transition-colors">
-                    <CardContent className="flex items-center justify-between p-4">
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-2">
-                          {workflow.status === 'active' ? (
-                            <CheckCircle2 className="h-4 w-4 text-green-500" />
-                          ) : workflow.status === 'error' ? (
-                            <XCircle className="h-4 w-4 text-red-500" />
-                          ) : (
-                            <AlertCircle className="h-4 w-4 text-yellow-500" />
-                          )}
-                        </div>
-
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-medium">{workflow.name}</h3>
-                            {workflow.isPersonal && (
-                              <Badge variant="secondary" className="text-xs">
-                                Personal
-                              </Badge>
-                            )}
-                            <Badge variant="outline" className="text-xs capitalize">
-                              {workflow.status}
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-muted-foreground">
-                            Last updated {workflow.lastUpdated} | Created {workflow.created}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="sm" asChild>
-                          <Link href={`/dashboard/workflows/${workflow.id}`}>
-                            <Play className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                        <Button variant="ghost" size="sm">
-                          ⋮
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-
-                <div className="flex items-center justify-between pt-4 text-sm text-muted-foreground">
-                  <div>Total {workflows.length}</div>
-                  <div className="flex items-center gap-2">
-                    <span>1</span>
-                    <span>50/page</span>
-                  </div>
-                </div>
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="credentials" className="space-y-4">
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <div className="text-center space-y-4">
-                  <div className="mx-auto w-12 h-12 bg-muted rounded-full flex items-center justify-center">
-                    <Settings className="h-6 w-6 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-medium">No credentials configured</h3>
-                    <p className="text-muted-foreground">
-                      Add API keys and credentials to connect to external services
-                    </p>
-                  </div>
-                  <Button asChild>
-                    <Link href="/dashboard/settings">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Credentials
-                    </Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="executions" className="space-y-4">
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <div className="text-center space-y-4">
-                  <div className="mx-auto w-12 h-12 bg-muted rounded-full flex items-center justify-center">
-                    <Play className="h-6 w-6 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-medium">No executions yet</h3>
-                    <p className="text-muted-foreground">
-                      Conversations will appear here once you start chatting
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
       </div>
     </div>
   );

@@ -58,7 +58,6 @@ export class SettingsService {
     }
 
     // Encrypt the API key
-    const keyHash = this.encryptApiKey(apiKey);
     const keyPreview = `...${apiKey.slice(-4)}`;
 
     const createdApiKey = await this.prisma.apiKey.create({
@@ -66,7 +65,7 @@ export class SettingsService {
         userId,
         provider: provider as Provider,
         name,
-        keyHash,
+        keyHash: apiKey,
         keyPreview,
       },
       select: {
@@ -134,20 +133,6 @@ export class SettingsService {
       return null;
     }
 
-    return this.decryptApiKey(apiKey.keyHash);
-  }
-
-  private encryptApiKey(apiKey: string): string {
-    const cipher = createCipher('aes-256-cbc', this.encryptionKey);
-    let encrypted = cipher.update(apiKey, 'utf8', 'hex');
-    encrypted += cipher.final('hex');
-    return encrypted;
-  }
-
-  private decryptApiKey(encryptedApiKey: string): string {
-    const decipher = createDecipher('aes-256-cbc', this.encryptionKey);
-    let decrypted = decipher.update(encryptedApiKey, 'hex', 'utf8');
-    decrypted += decipher.final('utf8');
-    return decrypted;
+    return apiKey.keyHash;
   }
 }

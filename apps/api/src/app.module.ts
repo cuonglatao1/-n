@@ -7,7 +7,6 @@ import { FlowModule } from './flow/flow.module';
 import { LlmProvidersModule } from './llm-providers/llm-providers.module';
 import { SettingsModule } from './settings/settings.module';
 import { PrismaModule } from './prisma/prisma.module';
-import { StreamingModule } from './streaming/streaming.module';
 
 @Module({
   imports: [
@@ -27,7 +26,6 @@ import { StreamingModule } from './streaming/streaming.module';
     FlowModule,
     LlmProvidersModule,
     SettingsModule,
-    StreamingModule,
   ],
 })
 export class AppModule {}

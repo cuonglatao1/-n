@@ -25,11 +25,15 @@ interface AddApiKeyForm {
 
 export default function SettingsPage() {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const { apiKeys, setApiKeys, addApiKey: addStoreApiKey, updateApiKey, deleteApiKey } = useSettingsStore();
-  
+  const {
+    apiKeys,
+    setApiKeys,
+    addApiKey: addStoreApiKey,
+    updateApiKey,
+    deleteApiKey,
+  } = useSettingsStore();
+
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [showApiKey, setShowApiKey] = useState<Record<string, boolean>>({});
   const [addForm, setAddForm] = useState<AddApiKeyForm>({
     provider: '',
     name: '',
@@ -39,7 +43,7 @@ export default function SettingsPage() {
   const settingsQuery = useQuery({
     queryKey: ['settings'],
     queryFn: () => apiClient.getSettings(),
-    onSuccess: (response) => {
+    onSuccess: (response: { data: { apiKeys: ApiKey[] } }) => {
       if (response.data) {
         setApiKeys(response.data.apiKeys);
       }
@@ -181,9 +185,17 @@ export default function SettingsPage() {
 
       <Tabs defaultValue="api-keys" className="space-y-6">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="api-keys">API Keys</TabsTrigger>
           <TabsTrigger value="preferences">Preferences</TabsTrigger>
+          <TabsTrigger value="api-keys">API Keys</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="preferences" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Preferences</CardTitle>
+            </CardHeader>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="api-keys" className="space-y-6">
           <Card>
@@ -195,7 +207,7 @@ export default function SettingsPage() {
                     Manage your API keys for different LLM providers
                   </CardDescription>
                 </div>
-                
+
                 <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                   <DialogTrigger asChild>
                     <Button>
@@ -203,13 +215,11 @@ export default function SettingsPage() {
                       Add API Key
                     </Button>
                   </DialogTrigger>
-                  
+
                   <DialogContent>
                     <DialogHeader>
                       <DialogTitle>Add API Key</DialogTitle>
-                      <DialogDescription>
-                        Add a new API key for an LLM provider
-                      </DialogDescription>
+                      <DialogDescription>Add a new API key for an LLM provider</DialogDescription>
                     </DialogHeader>
 
                     <div className="space-y-4">
@@ -217,7 +227,9 @@ export default function SettingsPage() {
                         <Label>Provider</Label>
                         <Select
                           value={addForm.provider}
-                          onValueChange={(value) => setAddForm({ ...addForm, provider: value as LLMProvider })}
+                          onValueChange={(value) =>
+                            setAddForm({ ...addForm, provider: value as LLMProvider })
+                          }
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Select a provider" />
@@ -251,16 +263,10 @@ export default function SettingsPage() {
                     </div>
 
                     <DialogFooter>
-                      <Button
-                        variant="outline"
-                        onClick={() => setIsAddDialogOpen(false)}
-                      >
+                      <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
                         Cancel
                       </Button>
-                      <Button
-                        onClick={handleAddApiKey}
-                        disabled={addApiKeyMutation.isPending}
-                      >
+                      <Button onClick={handleAddApiKey} disabled={addApiKeyMutation.isPending}>
                         {addApiKeyMutation.isPending ? 'Adding...' : 'Add Key'}
                       </Button>
                     </DialogFooter>
@@ -286,12 +292,10 @@ export default function SettingsPage() {
                         <Badge className={getProviderColor(key.provider)}>
                           {getProviderDisplayName(key.provider)}
                         </Badge>
-                        
+
                         <div>
                           <p className="font-medium">{key.name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {key.keyPreview}
-                          </p>
+                          <p className="text-sm text-muted-foreground">{key.keyPreview}</p>
                         </div>
                       </div>
 
@@ -320,67 +324,6 @@ export default function SettingsPage() {
                   ))}
                 </div>
               )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="preferences" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Preferences</CardTitle>
-              <CardDescription>
-                Configure your default settings and preferences
-              </CardDescription>
-            </CardHeader>
-            
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label>Default Model</Label>
-                <Select defaultValue="gpt-3.5-turbo">
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="gpt-3.5-turbo">GPT-3.5 Turbo</SelectItem>
-                    <SelectItem value="gpt-4">GPT-4</SelectItem>
-                    <SelectItem value="claude-3-haiku-20240307">Claude 3 Haiku</SelectItem>
-                    <SelectItem value="gemini-pro">Gemini Pro</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Max Concurrent Requests</Label>
-                <Select defaultValue="3">
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">1</SelectItem>
-                    <SelectItem value="2">2</SelectItem>
-                    <SelectItem value="3">3</SelectItem>
-                    <SelectItem value="5">5</SelectItem>
-                    <SelectItem value="10">10</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Auto Save Interval (seconds)</Label>
-                <Select defaultValue="30">
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="10">10</SelectItem>
-                    <SelectItem value="30">30</SelectItem>
-                    <SelectItem value="60">60</SelectItem>
-                    <SelectItem value="300">300</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <Button>Save Preferences</Button>
             </CardContent>
           </Card>
         </TabsContent>
