@@ -78,7 +78,7 @@ export default function ChatPage() {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex-1 p-6">
+      <div className="flex-1 p-2">
         {isLoadingFlow ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-muted-foreground">Loading canvas...</div>
@@ -125,16 +125,10 @@ export default function ChatPage() {
               autoFocus
             />
             <div className="flex justify-end gap-2">
-              <Button 
-                variant="outline" 
-                onClick={() => setIsCreateDialogOpen(false)}
-              >
+              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button 
-                onClick={handleCreateFlow}
-                disabled={isCreatingFlow || !newFlowName.trim()}
-              >
+              <Button onClick={handleCreateFlow} disabled={isCreatingFlow || !newFlowName.trim()}>
                 {isCreatingFlow ? 'Creating...' : 'Create Canvas'}
               </Button>
             </div>
