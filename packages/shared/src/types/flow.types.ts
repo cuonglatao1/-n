@@ -1,5 +1,4 @@
 import { Node, Edge } from 'reactflow';
-import { LLMModel } from './llm.types';
 
 export interface TextNodeData {
   id: string;
@@ -12,27 +11,7 @@ export interface TextNode extends Node {
   data: TextNodeData;
 }
 
-export interface PromptNodeData {
-  id: string;
-  prompt: string;
-  selectedModel: LLMModel | null;
-  response: string;
-  isLoading: boolean;
-  error?: string;
-  timestamp: Date;
-  tokenUsage?: {
-    input: number;
-    output: number;
-    total: number;
-  };
-}
-
-export interface PromptNode extends Node {
-  type: 'promptNode';
-  data: PromptNodeData;
-}
-
-export type FlowNode = TextNode | PromptNode;
+export type FlowNode = TextNode;
 
 export interface Flow {
   id: string;

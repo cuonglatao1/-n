@@ -14,9 +14,6 @@ export interface UserSettings {
 }
 
 export interface UserPreferences {
-  defaultModel: string;
-  maxConcurrentRequests: number;
-  autoSaveInterval: number;
   theme: 'light' | 'dark' | 'system';
 }
 
