@@ -29,3 +29,22 @@ export interface ErrorResponse {
   timestamp: string;
   path: string;
 }
+
+export type ProviderId = 'OPENAI' | 'GOOGLE';
+
+export interface LLMOptions {
+  temperature?: number;
+  maxTokens?: number;
+  topP?: number;
+  frequencyPenalty?: number;
+  presencePenalty?: number;
+  stop?: string[];
+}
+
+export interface StreamRequest {
+  model: string;
+  prompt: string;
+  provider?: ProviderId;
+  apiKey?: string;
+  options?: LLMOptions;
+}

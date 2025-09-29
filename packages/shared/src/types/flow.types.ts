@@ -4,6 +4,9 @@ export interface TextNodeData {
   id: string;
   text: string;
   isEditing?: boolean;
+  // role indicates who authored the message in a conversation canvas
+  // when omitted, nodes behave as generic text nodes for backward compatibility
+  role?: 'user' | 'assistant';
 }
 
 export interface TextNode extends Node {

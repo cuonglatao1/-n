@@ -25,6 +25,7 @@ import { Plus, Save, FileText } from 'lucide-react';
 import TextNode, { TextNodeData } from './text-node';
 import { Flow } from '@canvas-llm/shared';
 import { useToast } from '../ui/use-toast';
+import { apiClient } from '@/lib/api';
 
 const nodeTypes: NodeTypes = {
   textNode: TextNode,
@@ -52,14 +53,25 @@ export default function CanvasBoard({
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const nodesRef = useRef<Node[]>(nodes);
+  const edgesRef = useRef<Edge[]>(edges);
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isGenerating, setIsGenerating] = useState<string | null>(null);
 
   // Update nodes and edges when initialNodes/initialEdges change
   useEffect(() => {
     setNodes(initialNodes);
     setEdges(initialEdges);
   }, [initialNodes, initialEdges, setNodes, setEdges]);
+
+  useEffect(() => {
+    nodesRef.current = nodes;
+  }, [nodes]);
+
+  useEffect(() => {
+    edgesRef.current = edges;
+  }, [edges]);
 
   const onConnect = useCallback(
     (params: Connection) => setEdges((eds) => addEdge(params, eds)),
@@ -93,6 +105,7 @@ export default function CanvasBoard({
           id: getId(),
           text: '',
           isEditing: true,
+          role: 'user',
         },
       };
 
@@ -100,6 +113,95 @@ export default function CanvasBoard({
     },
     [reactFlowInstance, setNodes]
   );
+
+  // Handle Ask LLM event from TextNode
+  useEffect(() => {
+    async function handleAskLlm(e: Event) {
+      const detail = (e as CustomEvent).detail as {
+        nodeId: string;
+        text: string;
+        model?: string;
+      };
+      if (!detail) return;
+
+      const { nodeId, text, model } = detail;
+      const sourceNode = nodes.find((n) => n.id === nodeId) as Node<TextNodeData> | undefined;
+      if (!sourceNode) return;
+
+      // Create assistant node near the source
+      const assistantNodeId = getId();
+      const assistantDataId = getId();
+      const assistantNode: Node<TextNodeData> = {
+        id: assistantNodeId,
+        type: 'textNode',
+        position: {
+          x: (sourceNode.position?.x ?? 0) + 320,
+          y: sourceNode.position?.y ?? 0,
+        },
+        data: { id: assistantDataId, text: '', isEditing: false, role: 'assistant' },
+      };
+
+      setNodes((prev) => prev.concat(assistantNode));
+      const newEdge: Edge = {
+        id: `${nodeId}->${assistantNodeId}`,
+        source: nodeId,
+        target: assistantNodeId,
+      };
+      setEdges((prev) => prev.concat(newEdge));
+
+      // Stream from API
+      let succeeded = false;
+      try {
+        setIsGenerating(assistantNodeId);
+        let accumulated = '';
+        // Build simple chat history from nodes above the source node by Y position
+        const prior = nodesRef.current
+          .filter((n) => (n.position?.y ?? 0) <= (sourceNode.position?.y ?? 0))
+          .sort((a, b) => (a.position?.y ?? 0) - (b.position?.y ?? 0)) as Node<TextNodeData>[];
+        const history = prior
+          .filter((n) => (n.data as TextNodeData)?.text)
+          .map((n) => ({ role: (n.data as TextNodeData).role || 'user', content: (n.data as TextNodeData).text }));
+
+        await apiClient.streamText('OPENAI', text, model, (token) => {
+          accumulated += token;
+          setNodes((prev) =>
+            prev.map((n) =>
+              n.id === assistantNodeId
+                ? { ...n, data: { ...(n.data as TextNodeData), text: accumulated } }
+                : n
+            )
+          );
+        }, history);
+        succeeded = true;
+      } catch (err) {
+        toast({ title: 'LLM error', description: 'Failed to request LLM' });
+      } finally {
+        setIsGenerating(null);
+        if (succeeded) {
+          // Add a new user node below the assistant to continue the conversation
+          const assistantNode = nodesRef.current.find((n) => n.id === assistantNodeId);
+          const newUserNodeId = getId();
+          const newUserDataId = getId();
+          const newUserNode: Node<TextNodeData> = {
+            id: newUserNodeId,
+            type: 'textNode',
+            position: {
+              x: (assistantNode?.position?.x ?? 0),
+              y: (assistantNode?.position?.y ?? 0) + 200,
+            },
+            data: { id: newUserDataId, text: '', isEditing: true, role: 'user' },
+          };
+          setNodes((prev) => prev.concat(newUserNode));
+          setEdges((prev) =>
+            prev.concat({ id: `${assistantNodeId}->${newUserNodeId}`, source: assistantNodeId, target: newUserNodeId })
+          );
+        }
+      }
+    }
+
+    window.addEventListener('canvas:ask-llm', handleAskLlm as EventListener);
+    return () => window.removeEventListener('canvas:ask-llm', handleAskLlm as EventListener);
+  }, [nodes, setNodes, setEdges, toast, onSave]);
 
   const addTextNode = useCallback(() => {
     const newNode: Node<TextNodeData> = {
@@ -113,6 +215,7 @@ export default function CanvasBoard({
         id: getId(),
         text: '',
         isEditing: true,
+        role: 'user',
       },
     };
 
