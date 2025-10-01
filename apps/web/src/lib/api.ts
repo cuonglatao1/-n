@@ -28,10 +28,7 @@ class ApiClient {
     };
   }
 
-  private async request<T>(
-    endpoint: string,
-    options: RequestInit = {}
-  ): Promise<ApiResponse<T>> {
+  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
     const url = `${this.baseURL}${endpoint}`;
     const token = this.getAuthToken();
     console.log('url', url);
@@ -158,28 +155,48 @@ class ApiClient {
     });
   }
 
-  // Streaming endpoint
-  createStreamingRequest(streamData: StreamRequest): EventSource {
-    const token = this.getAuthToken();
-    const url = new URL(`${this.baseURL}/llm/stream`);
-    
-    if (token) {
-      url.searchParams.append('token', token);
-    }
+  async generateText(
+    provider: string,
+    prompt: string,
+    model?: string
+  ): Promise<ApiResponse<{ success: boolean; data: string }>> {
+    return await this.request<{ success: boolean; data: string }>('/llm/generate-text', {
+      method: 'POST',
+      body: JSON.stringify({ provider, prompt, model }),
+    });
+  }
 
-    const eventSource = new EventSource(url.toString());
-    
-    // Send the initial request
-    fetch(`${this.baseURL}/llm/stream`, {
+  async streamText(
+    provider: string,
+    prompt: string,
+    model?: string,
+    onToken?: (token: string) => void,
+    history?: Array<{ role: 'user' | 'assistant'; content: string }>
+  ): Promise<string> {
+    const url = `${this.baseURL}/llm/stream-text`;
+    const token = this.getAuthToken();
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         ...(token && { Authorization: `Bearer ${token}` }),
       },
-      body: JSON.stringify(streamData),
-    }).catch(console.error);
-
-    return eventSource;
+      body: JSON.stringify({ provider, prompt, model, history }),
+    });
+    if (!response.ok || !response.body) {
+      throw new Error('Stream request failed');
+    }
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let full = '';
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      const chunk = decoder.decode(value, { stream: true });
+      full += chunk;
+      onToken?.(chunk);
+    }
+    return full;
   }
 }
 
