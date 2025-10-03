@@ -42,8 +42,8 @@ export default function SettingsPage() {
 
   const settingsQuery = useQuery({
     queryKey: ['settings'],
-    queryFn: () => apiClient.getSettings(),
-    onSuccess: (response: { data: { apiKeys: ApiKey[] } }) => {
+    queryFn: async () => {
+      const response = await apiClient.getSettings();
       if (response.data) {
         setApiKeys(response.data.apiKeys);
       }
