@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,31 +7,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  USER
-  ADMIN
-}
-
-enum Provider {
-  OPENAI
-  ANTHROPIC
-  GOOGLE
-}
-
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String
-  password  String
-  role      Role     @default(USER)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  apiKeys     ApiKey[]
-  flows       Flow[]
-  settings    UserSettings?
+  id            String         @id @default(cuid())
+  email         String         @unique
+  name          String
+  password      String
+  role          Role           @default(USER)
+  isEmailVerified Boolean      @default(false)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  apiKeys       ApiKey[]
+  flows         Flow[]
   refreshTokens RefreshToken[]
+  settings      UserSettings?
+  emailVerifications EmailVerification[]
 
   @@map("users")
 }
@@ -45,11 +31,24 @@ model RefreshToken {
   userId    String
   expiresAt DateTime
   createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+model EmailVerification {
+  id        String   @id @default(cuid())
+  userId    String
+  code      String
+  email     String
+  isUsed    Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 
   // Relations
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("refresh_tokens")
+  @@map("email_verifications")
 }
 
 model ApiKey {
@@ -61,9 +60,7 @@ model ApiKey {
   keyPreview String
   isActive   Boolean  @default(true)
   createdAt  DateTime @default(now())
-
-  // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("api_keys")
 }
@@ -75,9 +72,7 @@ model UserSettings {
   maxConcurrentRequests Int    @default(3)
   autoSaveInterval      Int    @default(30000)
   theme                 String @default("system")
-
-  // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_settings")
 }
@@ -91,9 +86,20 @@ model Flow {
   edges       Json
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-
-  // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isPublic    Boolean  @default(false)
+  shareToken  String?  @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("flows")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Provider {
+  OPENAI
+  ANTHROPIC
+  GOOGLE
 }

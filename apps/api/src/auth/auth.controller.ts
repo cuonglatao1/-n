@@ -1,7 +1,7 @@
 import { Controller, Post, Body, UseGuards, Request } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
-import { LoginDto, RegisterDto, RefreshTokenDto } from './dto';
+import { LoginDto, RegisterDto, RefreshTokenDto, VerifyEmailDto, ResendVerificationDto } from './dto';
 
 @Controller('auth')
 export class AuthController {
@@ -38,6 +38,22 @@ export class AuthController {
     return {
       success: true,
       message: 'Logged out successfully',
+    };
+  }
+
+  @Post('verify-email')
+  async verifyEmail(@Body() verifyEmailDto: VerifyEmailDto) {
+    return {
+      success: true,
+      data: await this.authService.verifyEmail(verifyEmailDto),
+    };
+  }
+
+  @Post('resend-verification')
+  async resendVerification(@Body() resendVerificationDto: ResendVerificationDto) {
+    return {
+      success: true,
+      data: await this.authService.resendVerificationCode(resendVerificationDto),
     };
   }
 }

@@ -1,11 +1,12 @@
 "use client"
 
+import React from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api';
 import { useAuthStore } from '@/stores/auth.store';
 import { useToast } from '@/components/ui/use-toast';
-import type { LoginRequest, RegisterRequest } from '@canvas-llm/shared';
+import type { LoginRequest, RegisterRequest, VerifyEmailRequest, ResendVerificationRequest, User } from '@canvas-llm/shared';
 
 export function useAuth() {
   const router = useRouter();
@@ -58,13 +59,11 @@ export function useAuth() {
     },
     onSuccess: (response) => {
       if (response.data) {
-        const { user, accessToken, refreshToken } = response.data;
-        setAuth(user, accessToken, refreshToken);
         toast({
-          title: 'Account created!',
-          description: 'Your account has been successfully created.',
+          title: 'Registration successful!',
+          description: 'Please check your email for verification code.',
         });
-        router.push('/dashboard');
+        router.push(`/verify-email?email=${encodeURIComponent(response.data.user.email)}`);
       }
     },
     onError: (error: Error) => {
@@ -101,15 +100,17 @@ export function useAuth() {
     queryKey: ['profile'],
     queryFn: () => apiClient.getProfile(),
     enabled: isAuthenticated,
-    onSuccess: (response) => {
-      if (response.data) {
-        updateUser(response.data);
-      }
-    },
   });
 
+  // Handle profile query success
+  React.useEffect(() => {
+    if (profileQuery.data?.data) {
+      updateUser(profileQuery.data.data);
+    }
+  }, [profileQuery.data, updateUser]);
+
   const updateProfileMutation = useMutation({
-    mutationFn: (updates: Partial<typeof user>) => apiClient.updateProfile(updates),
+    mutationFn: (updates: Partial<User>) => apiClient.updateProfile(updates),
     onSuccess: (response) => {
       if (response.data) {
         updateUser(response.data);
@@ -128,6 +129,53 @@ export function useAuth() {
     },
   });
 
+  const verifyEmailMutation = useMutation({
+    mutationFn: (verifyData: VerifyEmailRequest) => apiClient.verifyEmail(verifyData),
+    onMutate: () => {
+      setLoading(true);
+      setError(null);
+    },
+    onSuccess: (response) => {
+      if (response.data) {
+        const { user, accessToken, refreshToken } = response.data;
+        setAuth(user, accessToken, refreshToken);
+        toast({
+          title: 'Email verified!',
+          description: 'Your email has been successfully verified.',
+        });
+        router.push('/dashboard');
+      }
+    },
+    onError: (error: Error) => {
+      setError(error.message);
+      toast({
+        variant: 'destructive',
+        title: 'Verification failed',
+        description: error.message,
+      });
+    },
+    onSettled: () => {
+      setLoading(false);
+    },
+  });
+
+  const resendVerificationMutation = useMutation({
+    mutationFn: (resendData: ResendVerificationRequest) => apiClient.resendVerification(resendData),
+    onSuccess: () => {
+      toast({
+        title: 'Verification code sent',
+        description: 'A new verification code has been sent to your email.',
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        variant: 'destructive',
+        title: 'Failed to resend code',
+        description: error.message,
+      });
+    },
+  });
+
   return {
     // State
     user,
@@ -140,6 +188,8 @@ export function useAuth() {
     register: registerMutation.mutate,
     logout: logoutMutation.mutate,
     updateProfile: updateProfileMutation.mutate,
+    verifyEmail: verifyEmailMutation.mutate,
+    resendVerification: resendVerificationMutation.mutate,
 
     // Query states
     isLoginLoading: loginMutation.isPending,
@@ -147,5 +197,7 @@ export function useAuth() {
     isLogoutLoading: logoutMutation.isPending,
     isProfileLoading: profileQuery.isLoading,
     isUpdateProfileLoading: updateProfileMutation.isPending,
+    isVerifyEmailLoading: verifyEmailMutation.isPending,
+    isResendVerificationLoading: resendVerificationMutation.isPending,
   };
 }

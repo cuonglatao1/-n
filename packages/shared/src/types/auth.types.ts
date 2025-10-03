@@ -9,6 +9,15 @@ export interface RegisterRequest {
   name: string;
 }
 
+export interface VerifyEmailRequest {
+  email: string;
+  code: string;
+}
+
+export interface ResendVerificationRequest {
+  email: string;
+}
+
 export interface AuthResponse {
   user: User;
   accessToken: string;
@@ -33,6 +42,7 @@ export interface User {
   email: string;
   name: string;
   role: UserRole;
+  isEmailVerified: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

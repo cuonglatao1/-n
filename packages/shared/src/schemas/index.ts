@@ -12,6 +12,15 @@ export const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
 });
 
+export const verifyEmailSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  code: z.string().length(6, 'Verification code must be 6 digits'),
+});
+
+export const resendVerificationSchema = z.object({
+  email: z.string().email('Invalid email address'),
+});
+
 export const passwordResetSchema = z.object({
   email: z.string().email('Invalid email address'),
 });

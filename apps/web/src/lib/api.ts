@@ -2,6 +2,8 @@ import type {
   ApiResponse, 
   LoginRequest, 
   RegisterRequest, 
+  VerifyEmailRequest,
+  ResendVerificationRequest,
   AuthResponse,
   User,
   Flow,
@@ -82,6 +84,20 @@ class ApiClient {
   async logout(): Promise<ApiResponse<void>> {
     return this.request<void>('/auth/logout', {
       method: 'POST',
+    });
+  }
+
+  async verifyEmail(verifyData: VerifyEmailRequest): Promise<ApiResponse<AuthResponse>> {
+    return this.request<AuthResponse>('/auth/verify-email', {
+      method: 'POST',
+      body: JSON.stringify(verifyData),
+    });
+  }
+
+  async resendVerification(resendData: ResendVerificationRequest): Promise<ApiResponse<{ message: string }>> {
+    return this.request<{ message: string }>('/auth/resend-verification', {
+      method: 'POST',
+      body: JSON.stringify(resendData),
     });
   }
 
