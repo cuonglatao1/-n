@@ -54,11 +54,13 @@ export default function TextNode({ id, data, selected }: NodeProps<TextNodeData>
   }, [data]);
 
   const handleAskLlm = useCallback(() => {
+    const content = (isEditing ? text : (data.text || ''))?.trim();
+    if (!content) return;
     const event = new CustomEvent('canvas:ask-llm', {
-      detail: { nodeId: id, text, model },
+      detail: { nodeId: id, text: content, model },
     });
     window.dispatchEvent(event);
-  }, [id, text, model]);
+  }, [id, text, model, data.text, isEditing]);
 
   return (
     <Card
@@ -127,7 +129,7 @@ export default function TextNode({ id, data, selected }: NodeProps<TextNodeData>
                   variant="outline"
                   onClick={handleAskLlm}
                   className="h-6 px-2 text-xs"
-                  disabled={!hasActiveApiKey}
+                  disabled={!hasActiveApiKey || !((data.text || '').trim())}
                 >
                   Ask LLM
                 </Button>

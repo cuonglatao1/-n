@@ -3,19 +3,16 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
-import { DashboardSidebar } from '@/components/dashboard-sidebar';
 import { useAuthStore } from '@/stores/auth.store';
 
-interface DashboardLayoutProps {
+interface AuthSectionLayoutProps {
   children: React.ReactNode;
 }
 
-export default function DashboardLayout({ children }: DashboardLayoutProps) {
+export default function AuthSectionLayout({ children }: AuthSectionLayoutProps) {
   const router = useRouter();
-  const { user, logout, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [hydrated, setHydrated] = React.useState(
-    // Zustand persist helper to know if state is rehydrated
-    // This avoids redirect flicker on initial mount/refresh
     (useAuthStore as any).persist?.hasHydrated?.() ?? false
   );
 
@@ -23,7 +20,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     const unsub = (useAuthStore as any).persist?.onFinishHydration?.(() => {
       setHydrated(true);
     });
-    // In case there's no persist middleware available
     if (!(useAuthStore as any).persist) {
       setHydrated(true);
     }
@@ -34,12 +30,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   React.useEffect(() => {
     if (!hydrated) return;
-    if (!isAuthenticated) {
-      router.push('/login');
+    if (isAuthenticated) {
+      router.replace('/dashboard');
     }
   }, [hydrated, isAuthenticated, router]);
 
-  if (!hydrated || !isAuthenticated || !user) {
+  // Avoid flashing the auth forms until hydration status is known
+  if (!hydrated) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -47,12 +44,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     );
   }
 
-  return (
-    <div className="flex h-screen flex-col">
-      <div className="flex flex-1 overflow-hidden">
-        <DashboardSidebar />
-        <main className="flex-1 overflow-hidden">{children}</main>
-      </div>
-    </div>
-  );
+  return <>{children}</>;
 }
+
+

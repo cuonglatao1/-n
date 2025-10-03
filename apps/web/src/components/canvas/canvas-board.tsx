@@ -39,8 +39,19 @@ interface CanvasBoardProps {
   className?: string;
 }
 
-let nodeId = 0;
-const getId = () => `text_${nodeId++}`;
+// Generate a collision-resistant id for nodes and data
+const generateUniqueId = (prefix: string) => {
+  try {
+    // Prefer crypto.randomUUID when available in modern browsers
+    const uuid = (window as any)?.crypto?.randomUUID?.();
+    if (uuid) return `${prefix}_${uuid}`;
+  } catch (_) {
+    // window may be undefined during SSR hydration; fall through to fallback
+  }
+  // Fallback: timestamp + random segment
+  const rand = Math.random().toString(36).slice(2, 10);
+  return `${prefix}_${Date.now()}_${rand}`;
+};
 
 export default function CanvasBoard({
   currentFlow,
@@ -98,11 +109,11 @@ export default function CanvasBoard({
       });
 
       const newNode: Node<TextNodeData> = {
-        id: getId(),
+        id: generateUniqueId('text'),
         type: 'textNode',
         position,
         data: {
-          id: getId(),
+          id: generateUniqueId('data'),
           text: '',
           isEditing: true,
           role: 'user',
@@ -129,8 +140,8 @@ export default function CanvasBoard({
       if (!sourceNode) return;
 
       // Create assistant node near the source
-      const assistantNodeId = getId();
-      const assistantDataId = getId();
+      const assistantNodeId = generateUniqueId('text');
+      const assistantDataId = generateUniqueId('data');
       const assistantNode: Node<TextNodeData> = {
         id: assistantNodeId,
         type: 'textNode',
@@ -180,8 +191,8 @@ export default function CanvasBoard({
         if (succeeded) {
           // Add a new user node below the assistant to continue the conversation
           const assistantNode = nodesRef.current.find((n) => n.id === assistantNodeId);
-          const newUserNodeId = getId();
-          const newUserDataId = getId();
+          const newUserNodeId = generateUniqueId('text');
+          const newUserDataId = generateUniqueId('data');
           const newUserNode: Node<TextNodeData> = {
             id: newUserNodeId,
             type: 'textNode',
@@ -205,14 +216,14 @@ export default function CanvasBoard({
 
   const addTextNode = useCallback(() => {
     const newNode: Node<TextNodeData> = {
-      id: getId(),
+      id: generateUniqueId('text'),
       type: 'textNode',
       position: {
         x: Math.random() * 400 + 100,
         y: Math.random() * 400 + 100,
       },
       data: {
-        id: getId(),
+        id: generateUniqueId('data'),
         text: '',
         isEditing: true,
         role: 'user',
