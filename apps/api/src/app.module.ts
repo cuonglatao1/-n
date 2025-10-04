@@ -7,6 +7,7 @@ import { FlowModule } from './flow/flow.module';
 import { LlmProvidersModule } from './llm-providers/llm-providers.module';
 import { SettingsModule } from './settings/settings.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { PrismaModule } from './prisma/prisma.module';
       },
     ]),
     PrismaModule,
+    HealthModule,
     AuthModule,
     UsersModule,
     FlowModule,
