@@ -34,7 +34,6 @@ class ApiClient {
     const url = `${this.baseURL}${endpoint}`;
     const token = this.getAuthToken();
     console.log('url', url);
-    console.log(123)
 
     const config: RequestInit = {
       headers: {
